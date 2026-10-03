@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>월급생활자 생존 계산기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@2.0/nanumsquare.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f6f8;color:#202124;font-family:"NanumSquare",-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif}
+.wrap{max-width:520px;margin:auto;padding:22px 16px 40px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 3px 14px #00000008}
+h1{font-size:24px;margin:0 0 8px}h2{font-size:17px;margin:0 0 16px}
+.sub{color:#6b7280;font-size:14px;line-height:1.5;margin-bottom:18px}
+label{display:block;font-size:14px;font-weight:600;margin:14px 0 7px}
+input{width:100%;padding:13px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
+.result{text-align:center;padding:24px 15px}.result .small{font-size:14px;color:#6b7280}.big{font-size:38px;font-weight:800;margin:8px 0 12px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}.stat{background:#f8fafc;border-radius:12px;padding:13px}.stat b{display:block;font-size:18px;margin-top:5px}
+.msg{margin-top:15px;padding:13px;border-radius:11px;text-align:left;font-size:14px;line-height:1.5}
+.good{background:#ecfdf3}.warn{background:#fff7ed}.bad{background:#fef2f2}
+button{width:100%;border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;background:#202124;color:white;margin-top:12px}
+.note{font-size:12px;color:#8a8f98;line-height:1.5;margin-top:14px}
+
+.hidden{display:none}
+.share-card{margin-top:18px;border-radius:18px;padding:22px;background:#202124;color:white;text-align:left}
+.share-brand{font-size:12px;opacity:.65;margin-bottom:24px}
+.share-title{font-size:15px;opacity:.85}
+.share-main{font-size:34px;font-weight:800;margin:7px 0}
+.share-label{font-size:12px;opacity:.65}
+.share-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+.share-grid div{background:#ffffff12;border-radius:10px;padding:11px}
+.share-grid span{display:block;font-size:11px;opacity:.6}
+.share-grid b{display:block;font-size:15px;margin-top:4px}
+.share-footer{font-size:11px;opacity:.45;margin-top:20px}\n#shareActions button{background:#fff;color:#202124;border:1px solid #d1d5db}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>월급생활자 생존 계산기</h1>
+    <div class="sub">내 월급에서 고정지출과 목표 저축을 빼면, 이번 달 실제로 자유롭게 쓸 수 있는 돈은 얼마일까요?</div>
+    <h2>월급 입력</h2>
+    <label>월 실수령액</label><input id="salary" type="text" inputmode="numeric" value="3,000,000">
+    <h2 style="margin-top:24px">월 지출 입력</h2>
+    <label>주거비</label><input class="expense" type="text" inputmode="numeric" value="600,000">
+    <label>통신비</label><input class="expense" type="text" inputmode="numeric" value="70,000">
+    <label>보험료</label><input class="expense" type="text" inputmode="numeric" value="150,000">
+    <label>교통비</label><input class="expense" type="text" inputmode="numeric" value="100,000">
+    <label>식비</label><input class="expense" type="text" inputmode="numeric" value="400,000">
+    <label>구독료</label><input class="expense" type="text" inputmode="numeric" value="30,000">
+    <label>대출/카드 상환</label><input class="expense" type="text" inputmode="numeric" value="200,000">
+    <label>기타 필수지출</label><input class="expense" type="text" inputmode="numeric" value="100,000">
+    <label>목표 저축액</label><input id="saving" type="text" inputmode="numeric" value="1,000,000">
+  </div>
+
+  <div class="card result">
+    <div class="small">저축 후 실제 여유자금</div>
+    <div class="big" id="free">-</div>
+    <div class="stats">
+      <div class="stat">월 저축률<b id="rate">-</b></div>
+      <div class="stat">연간 예상 저축액<b id="yearSave">-</b></div>
+    </div>
+    <div id="message" class="msg"></div>
+    
+<div id="shareCard" class="share-card hidden">
+  <div class="share-brand">월급생활자 생존 계산기</div>
+  <div class="share-title">내 월급 생활비 계산 결과</div>
+  <div class="share-main" id="cardFree">350,000원</div>
+  <div class="share-label">저축 및 필수지출을 제외하고 남는 돈</div>
+  <div class="share-grid">
+    <div><span>월급</span><b id="cardSalary">3,000,000원</b></div>
+    <div><span>저축률</span><b id="cardRate">33.3%</b></div>
+  </div>
+  <div class="share-footer">월급생활이야기 · 무료 계산기</div>
+</div>
+<button onclick="shareResult()">내 결과 공유하기</button>
+<div id="shareActions" class="hidden">
+  <button onclick="saveResultImage()">결과 이미지 저장</button>
+  <button onclick="shareResultImage()">이미지로 공유하기</button>
+</div>
+    <div class="note">저축률의 10%·20%는 참고용 구간이며 모든 사람에게 적용되는 정답은 아닙니다. 이 계산기는 단순 가계관리 도구입니다.</div>
+  </div>
+</div>
+<script>
+const num = el => Number(String(el.value).replace(/[^0-9]/g,"")) || 0;
+const won=n=>Math.round(n).toLocaleString("ko-KR")+"원";
+function formatInput(el){
+ const digits=String(el.value).replace(/[^0-9]/g,"");
+ el.value=digits ? Number(digits).toLocaleString("ko-KR") : "";
+}
+n=>Math.round(n).toLocaleString("ko-KR")+"원";
+function calc(){
+ const salary=num(document.getElementById("salary"));
+ const expenses=[...document.querySelectorAll(".expense")].reduce((s,e)=>s+num(e),0);
+ const saving=num(document.getElementById("saving"));
+ const free=salary-expenses-saving, rate=salary?saving/salary:0;
+ document.getElementById("free").textContent=won(free);
+ document.getElementById("rate").textContent=(rate*100).toFixed(1)+"%";
+ document.getElementById("yearSave").textContent=won(saving*12);
+ document.getElementById("cardSalary").textContent=won(salary);
+ document.getElementById("cardRate").textContent=(rate*100).toFixed(1)+"%";
+ document.getElementById("cardFree").textContent=won(free);
+ const m=document.getElementById("message");
+ if(free<0){m.className="msg bad";m.textContent="현재 지출과 목표 저축을 함께 유지하면 월급보다 필요한 돈이 많습니다. 목표 저축액이나 지출을 한 번 점검해보세요."}
+ else if(rate<.10){m.className="msg warn";m.textContent="저축률이 10% 미만입니다. 현재 저축 목표가 너무 낮은 것은 아닌지 한 번 점검해보세요."}
+ else if(rate<.20){m.className="msg warn";m.textContent="저축률이 10~20% 구간입니다. 주거비·부채 등 본인 상황을 고려해 목표를 조정해보세요."}
+ else {m.className="msg good";m.textContent="목표 저축 후에도 여유자금이 있습니다. 현재 저축 목표와 생활비의 균형을 확인해보세요."}
+}
+document.querySelectorAll("input").forEach(x=>{x.addEventListener("input",()=>{formatInput(x);calc();}); x.addEventListener("blur",()=>formatInput(x));});
+function shareResult(){
+ document.getElementById("shareCard").classList.remove("hidden");
+ document.getElementById("shareActions").classList.remove("hidden");
+}
+
+async function makeResultCanvas(){
+ await document.fonts.ready;
+ await document.fonts.load("700 34px NanumSquare");
+ await document.fonts.load("400 28px NanumSquare");
+ await document.fonts.load("800 76px NanumSquare");
+ await document.fonts.load("400 25px NanumSquare");
+ await document.fonts.load("400 23px NanumSquare");
+ await document.fonts.load("400 22px NanumSquare");
+ const canvas=document.createElement("canvas");
+ canvas.width=1080; canvas.height=1050;
+ const ctx=canvas.getContext("2d");
+ ctx.fillStyle="#202124"; ctx.fillRect(0,0,1080,1350);
+
+ const salary=won(num(document.getElementById("salary")));
+ const free=document.getElementById("free").textContent;
+ const rate=document.getElementById("rate").textContent;
+
+ ctx.fillStyle="#ffffff";
+ ctx.font="700 34px NanumSquare";
+ ctx.fillText("월급생활자 생존 계산기",70,80);
+
+ ctx.fillStyle="#b8bcc4";
+ ctx.font="400 28px NanumSquare";
+ ctx.fillText("내 월급 생활비 계산 결과",70,150);
+
+ ctx.fillStyle="#ffffff";
+ ctx.font="800 76px NanumSquare";
+ ctx.fillText(free,70,260);
+
+ ctx.fillStyle="#9ca3af";
+ ctx.font="400 25px NanumSquare";
+ ctx.fillText("저축 및 필수지출을 제외하고 남는 돈",70,310);
+
+ ctx.fillStyle="#ffffff12";
+ ctx.fillRect(70,370,940,150);
+
+ ctx.fillStyle="#9ca3af";
+ ctx.font="400 23px NanumSquare";
+ ctx.fillText("월급",105,420);
+ ctx.fillText("저축률",600,420);
+
+ ctx.fillStyle="#ffffff";
+ ctx.font="700 34px NanumSquare";
+ ctx.fillText(salary,105,475);
+ ctx.fillText(rate,600,475);
+
+ ctx.fillStyle="#6b7280";
+ ctx.font="400 22px NanumSquare";
+ ctx.fillText("월급생활이야기 · 무료 계산기",70,970);
+
+ return canvas;
+}
+
+async function saveResultImage(){
+ const canvas=await makeResultCanvas();
+ canvas.toBlob(blob=>{
+   const a=document.createElement("a");
+   a.href=URL.createObjectURL(blob);
+   a.download="월급생활자-생존계산기-결과.png";
+   a.click();
+   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+ },"image/png");
+}
+
+async function shareResultImage(){
+ const canvas=await makeResultCanvas();
+ canvas.toBlob(async blob=>{
+   const file=new File([blob],"월급생활자-생존계산기-결과.png",{type:"image/png"});
+   if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+     try{ await navigator.share({title:"월급생활자 생존 계산기 결과",files:[file]}); }catch(e){}
+   }else{
+     saveResultImage();
+     alert("이 기기/브라우저에서는 이미지 공유를 지원하지 않아 이미지를 저장했습니다.");
+   }
+ },"image/png");
+}
+calc();
+</script>
+</body>
+</html>
